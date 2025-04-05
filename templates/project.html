@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoS Protection Project</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --text-color: #1f2937;
+            --light-bg: #f3f4f6;
+            --white: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--white);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-left: 1.5rem;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+
+        .nav-links a:hover {
+            background-color: var(--light-bg);
+            transform: translateY(-2px);
+        }
+
+        .project-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 4rem 2rem;
+            background: var(--gradient);
+            color: var(--white);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></svg>') repeat;
+            opacity: 0.1;
+        }
+
+        .project-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .section {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-bg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h2 i {
+            color: var(--secondary-color);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-card ul {
+            list-style: none;
+        }
+
+        .feature-card li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-card li::before {
+            content: '✓';
+            color: var(--success);
+            position: absolute;
+            left: 0;
+        }
+
+        .code-block {
+            background: var(--text-color);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: monospace;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'Code';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--primary-color);
+            color: var(--white);
+            padding: 0.3rem 0.8rem;
+            border-radius: 0 12px 0 12px;
+            font-size: 0.8rem;
+        }
+
+        .workflow {
+            list-style: none;
+            counter-reset: workflow-counter;
+        }
+
+        .workflow li {
+            counter-increment: workflow-counter;
+            margin-bottom: 1.5rem;
+            padding-left: 3rem;
+            position: relative;
+        }
+
+        .workflow li::before {
+            content: counter(workflow-counter);
+            background: var(--gradient);
+            color: var(--white);
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: 0;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-card {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .metric-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .primary-button {
+            background: var(--gradient);
+            color: var(--white);
+        }
+
+        .secondary-button {
+            background: var(--text-color);
+            color: var(--white);
+        }
+
+        @media (max-width: 768px) {
+            .project-header h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .workflow-container {
+            margin-top: 2rem;
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .workflow-step {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .step-number {
+            background: var(--gradient);
+            color: var(--white);
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex-grow: 1;
+        }
+
+        .step-content h4 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .step-content p {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .getting-started-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .start-step {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .start-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .step-icon {
+            background: var(--gradient);
+            color: var(--white);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .workflow-grid,
+            .getting-started-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .workflow-step,
+            .start-step {
+                padding: 1rem;
+            }
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tech-card {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tech-icon {
+            background: var(--gradient);
+            color: var(--white);
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tech-content h4 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .tech-content p {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .run-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .run-step {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .run-step:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .run-step .code-block {
+            margin: 0.5rem 0 0 0;
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-card,
+            .run-step {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <h1><i class="fas fa-shield-alt"></i> DDoS Protection System</h1>
+                <div class="nav-links">
+                    <a href="/"><i class="fas fa-home"></i> Home</a>
+                    <a href="/analytics" target="_blank"><i class="fas fa-chart-line"></i> Analytics Dashboard</a>
+                    <a href="https://github.com/Tanh1ro" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="project-header">
+            <h1>DDoS Protection System</h1>
+            <p>A robust security solution for protecting web applications from Distributed Denial of Service attacks</p>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-info-circle"></i> Project Overview</h2>
+            <p>This project implements a comprehensive DDoS protection system that safeguards web applications from distributed denial of service attacks. It combines real-time monitoring, intelligent rate limiting, and detailed analytics to provide effective protection against malicious traffic.</p>
+            
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="value">20</div>
+                    <div>Requests/10s Threshold</div>
+                </div>
+                <div class="metric-card">
+                    <div class="value">300s</div>
+                    <div>Block Duration</div>
+                </div>
+                <div class="metric-card">
+                    <div class="value">100%</div>
+                    <div>Real-time Monitoring</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-star"></i> Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-shield-alt"></i> DDoS Protection</h3>
+                    <ul>
+                        <li>Intelligent rate limiting</li>
+                        <li>IP-based blocking system</li>
+                        <li>Configurable thresholds</li>
+                        <li>Automatic threat detection</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-chart-line"></i> Real-time Analytics</h3>
+                    <ul>
+                        <li>Live request monitoring</li>
+                        <li>Detailed attack logs</li>
+                        <li>IP tracking and analysis</li>
+                        <li>Visual data representation</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-vial"></i> Testing Tools</h3>
+                    <ul>
+                        <li>DDoS attack simulator</li>
+                        <li>Multi-threaded testing</li>
+                        <li>Customizable attack patterns</li>
+                        <li>Performance metrics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-cogs"></i> How It Works</h2>
+            <div class="code-block">
+# Protection Configuration
+BLOCK_THRESHOLD = 20  # Maximum requests per 10 seconds
+BLOCK_DURATION = 300  # Block duration in seconds (5 minutes)
+            </div>
+
+            <div class="workflow-container">
+                <h3><i class="fas fa-list-ol"></i> Protection Workflow</h3>
+                <div class="workflow-grid">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Request Received</h4>
+                            <p>Client IP address sends request to the server</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>IP Check</h4>
+                            <p>System verifies if IP is in blocked list</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Request Tracking</h4>
+                            <p>Request count is tracked for each IP</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Threshold Check</h4>
+                            <p>If threshold exceeded, IP is blocked</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Event Logging</h4>
+                            <p>All events are logged for analysis</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h4>Real-time Updates</h4>
+                            <p>Analytics dashboard updates in real-time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-code"></i> Technologies Used</h2>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-icon"><i class="fab fa-python"></i></div>
+                    <div class="tech-content">
+                        <h4>Python</h4>
+                        <p>Backend server and DDoS protection logic</p>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon"><i class="fab fa-html5"></i></div>
+                    <div class="tech-content">
+                        <h4>HTML/CSS</h4>
+                        <p>Frontend interface and analytics dashboard</p>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon"><i class="fas fa-database"></i></div>
+                    <div class="tech-content">
+                        <h4>CSV Files</h4>
+                        <p>Data storage for requests and blocks</p>
+                    </div>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-icon"><i class="fas fa-server"></i></div>
+                    <div class="tech-content">
+                        <h4>Flask</h4>
+                        <p>Web framework for the application</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-terminal"></i> How to Run</h2>
+            <div class="run-steps">
+                <div class="run-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Install Dependencies</h4>
+                        <div class="code-block">
+pip install flask
+                        </div>
+                    </div>
+                </div>
+                <div class="run-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Start the Server</h4>
+                        <div class="code-block">
+python portfolio_app.py
+                        </div>
+                    </div>
+                </div>
+                <div class="run-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Access the Application</h4>
+                        <p>Open your browser and navigate to:</p>
+                        <div class="code-block">
+http://127.0.0.1:5000
+                        </div>
+                    </div>
+                </div>
+                <div class="run-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Run DDoS Simulator (Optional)</h4>
+                        <p>In a new terminal, run:</p>
+                        <div class="code-block">
+python ddos_simulator.py
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><i class="fas fa-rocket"></i> Getting Started</h2>
+            <div class="getting-started-grid">
+                <div class="start-step">
+                    <div class="step-icon"><i class="fas fa-server"></i></div>
+                    <div class="step-content">
+                        <h4>Start Server</h4>
+                        <p>Launch the portfolio application server</p>
+                    </div>
+                </div>
+                <div class="start-step">
+                    <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="step-content">
+                        <h4>Access Dashboard</h4>
+                        <p>Open the analytics dashboard for monitoring</p>
+                    </div>
+                </div>
+                <div class="start-step">
+                    <div class="step-icon"><i class="fas fa-vial"></i></div>
+                    <div class="step-content">
+                        <h4>Test System</h4>
+                        <p>Use the DDoS simulator for testing (optional)</p>
+                    </div>
+                </div>
+                <div class="start-step">
+                    <div class="step-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="step-content">
+                        <h4>Monitor Protection</h4>
+                        <p>Track real-time protection and blocking</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <a href="/analytics" target="_blank" class="button primary-button">
+                    <i class="fas fa-chart-line"></i> Open Analytics Dashboard
+                </a>
+                <a href="https://github.com/Tanh1ro" target="_blank" class="button secondary-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
