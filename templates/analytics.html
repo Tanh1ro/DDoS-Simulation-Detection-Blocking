@@ -3,233 +3,701 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DDoS Protection Analytics</title>
+    <title>DDoS Monitoring Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --text-color: #1f2937;
+            --light-bg: #f3f4f6;
+            --white: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gradient: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
-        .dashboard-header {
+
+        header {
+            background-color: var(--white);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 1rem 0;
         }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-left: 1.5rem;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
         }
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        .nav-links a:hover {
+            background-color: var(--light-bg);
+            transform: translateY(-2px);
+        }
+
+        .dashboard-header {
             text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--gradient);
+            color: var(--white);
+            border-radius: 15px;
+            position: relative;
         }
-        .stat-card h3 {
-            margin: 0;
-            color: #666;
-            font-size: 14px;
-        }
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin: 10px 0;
-        }
-        .log-section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .log-section h2 {
-            margin-top: 0;
-            color: #333;
-            font-size: 18px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .log-entry {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            font-family: monospace;
-            font-size: 14px;
-        }
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-        .log-timestamp {
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 5px;
-        }
-        .log-content {
-            color: #333;
-            word-break: break-all;
-        }
-        .status-success {
-            color: #28a745;
-        }
-        .status-blocked {
-            color: #dc3545;
-        }
-        .auto-refresh {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .refresh-toggle {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .refresh-interval {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .refresh-interval input {
-            width: 50px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+
         .live-badge {
-            background-color: #dc3545;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
+            background: var(--danger);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 1rem;
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        .log-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #eee;
-            border-radius: 4px;
+
+        .auto-refresh {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
         }
-        .event-type {
-            display: inline-block;
-            padding: 2px 6px;
+
+        .refresh-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-interval {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-interval input {
+            width: 4rem;
+            padding: 0.25rem;
+            border: none;
             border-radius: 4px;
-            font-size: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success);
+        }
+
+        .status-dot.warning {
+            background-color: var(--warning);
+        }
+
+        .status-dot.danger {
+            background-color: var(--danger);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card h3 {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
             font-weight: bold;
-            margin-right: 8px;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
         }
-        .event-type-request {
-            background-color: #e8f5e9;
-            color: #2e7d32;
+
+        .metric-label {
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 0.9rem;
         }
-        .event-type-block {
-            background-color: #ffebee;
-            color: #c62828;
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
-        .event-type-attack {
-            background-color: #fff3e0;
-            color: #e65100;
+
+        .chart-container {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
         }
+
+        .chart-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .chart-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .chart-wrapper::-webkit-scrollbar-track {
+            background: var(--light-bg);
+            border-radius: 4px;
+        }
+
+        .chart-wrapper::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .chart-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        .chart-container h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recent-activity {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .recent-activity h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-bg);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .activity-icon.warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .activity-icon.danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .activity-content {
+            flex-grow: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .start-button {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .stop-button {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .settings-button {
+            background: var(--light-bg);
+            color: var(--text-color);
+        }
+
         .log-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
+
+        .log-section {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .log-section h2 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .log-container {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: var(--light-bg);
+            border-radius: 3px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--light-bg);
+            font-size: 0.9rem;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-timestamp {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .log-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-type {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .event-type-request {
+            background: var(--primary-color);
+            color: var(--white);
+        }
+
+        .event-type-block {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .event-type-attack {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .status-success {
+            color: var(--success);
+        }
+
+        .status-error {
+            color: var(--danger);
+        }
+
         @media (max-width: 768px) {
-            .log-grid {
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+
+            .charts-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .control-button {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
+    <header>
+        <div class="container">
+            <nav>
+                <h1><i class="fas fa-chart-line"></i> DDoS Monitoring Dashboard</h1>
+                <div class="nav-links">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/project" class="nav-link">Project</a>
+                    <a href="https://github.com/yourusername/ddos-protection" class="nav-link" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
     <div class="container">
         <div class="dashboard-header">
-            <h1>DDoS Protection Analytics <span class="live-badge">LIVE</span></h1>
+            <h1>Real-time DDoS Protection Analytics <span class="live-badge">LIVE</span></h1>
             <div class="auto-refresh">
                 <div class="refresh-toggle">
                     <input type="checkbox" id="auto-refresh" checked>
                     <label for="auto-refresh">Auto-refresh</label>
                 </div>
                 <div class="refresh-interval">
-                    <label for="refresh-interval">Interval (seconds):</label>
+                    <label for="refresh-interval">Interval (s):</label>
                     <input type="number" id="refresh-interval" value="5" min="1" max="60">
+                </div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">System Status: Active</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button start-button" id="start-button">
+                <i class="fas fa-play"></i> Start Detection
+            </button>
+            <button class="control-button stop-button" id="stop-button">
+                <i class="fas fa-stop"></i> Stop Detection
+            </button>
+            <button class="control-button settings-button" id="settings-button">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3><i class="fas fa-bolt"></i> Requests per Second</h3>
+                <div class="metric-value" id="rps-value">0</div>
+                <div class="metric-label">Current Rate</div>
+            </div>
+            <div class="metric-card">
+                <h3><i class="fas fa-users"></i> Unique IPs</h3>
+                <div class="metric-value" id="unique-ips">0</div>
+                <div class="metric-label">Active Connections</div>
+            </div>
+            <div class="metric-card">
+                <h3><i class="fas fa-clock"></i> Response Time</h3>
+                <div class="metric-value" id="response-time">0ms</div>
+                <div class="metric-label">Average</div>
+            </div>
+            <div class="metric-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Error Rate</h3>
+                <div class="metric-value" id="error-rate">0%</div>
+                <div class="metric-label">Last 5 Minutes</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3><i class="fas fa-chart-line"></i> Traffic Overview</h3>
+                <div class="chart-wrapper">
+                    <canvas id="traffic-chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3><i class="fas fa-shield-alt"></i> Attack Detection</h3>
+                <div class="chart-wrapper">
+                    <canvas id="attack-chart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Requests</h3>
-                <div class="value">{{ total_requests }}</div>
-            </div>
-            <div class="stat-card">
-                <h3>Total Blocks</h3>
-                <div class="value">{{ total_blocks }}</div>
-            </div>
+        <div class="recent-activity">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+            <ul class="activity-list" id="activity-list">
+                <!-- Activity items will be added dynamically -->
+            </ul>
         </div>
 
         <div class="log-grid">
             <div class="log-section">
-                <h2>Event Log</h2>
-                <div class="log-container">
-                    {% for event in all_events %}
-                    <div class="log-entry">
-                        <div class="log-timestamp">{{ event.timestamp }}</div>
-                        <div class="log-content">
-                            {% if event.type == 'request' %}
-                            <span class="event-type event-type-request">REQUEST</span>
-                            IP: {{ event.ip }} - Status: <span class="status-{{ event.status.lower() }}">{{ event.status }}</span> - Count: {{ event.count }}
-                            {% else %}
-                            <span class="event-type event-type-block">BLOCK</span>
-                            IP: {{ event.ip }} - Reason: {{ event.reason }} - Duration: {{ event.duration }}s
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
+                <h2><i class="fas fa-list"></i> Event Log</h2>
+                <div class="log-container" id="event-log">
+                    <!-- Event log entries will be added dynamically -->
                 </div>
             </div>
 
             <div class="log-section">
-                <h2>Attack Log</h2>
-                <div class="log-container">
-                    {% for attack in attack_log %}
-                    <div class="log-entry">
-                        <div class="log-timestamp">{{ attack.timestamp }}</div>
-                        <div class="log-content">
-                            <span class="event-type event-type-attack">ATTACK</span>
-                            {{ attack.content }}
-                        </div>
-                    </div>
-                    {% endfor %}
+                <h2><i class="fas fa-shield-alt"></i> Attack Log</h2>
+                <div class="log-container" id="attack-log">
+                    <!-- Attack log entries will be added dynamically -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Initialize Socket.IO connection
+        const socket = io();
+
+        // Chart configurations
+        const trafficCtx = document.getElementById('traffic-chart').getContext('2d');
+        const attackCtx = document.getElementById('attack-chart').getContext('2d');
+
+        const trafficChart = new Chart(trafficCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Requests per Second',
+                    data: [],
+                    borderColor: '#2563eb',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    },
+                    x: {
+                        min: 0,
+                        max: 20,
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        }
+                    }
+                }
+            }
+        });
+
+        const attackChart = new Chart(attackCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Anomaly Score',
+                    data: [],
+                    borderColor: '#ef4444',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    },
+                    x: {
+                        min: 0,
+                        max: 20,
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        }
+                    }
+                }
+            }
+        });
+
+        // Auto-refresh functionality
         let refreshInterval;
         const refreshIntervalInput = document.getElementById('refresh-interval');
         const autoRefreshCheckbox = document.getElementById('auto-refresh');
 
-        function refreshPage() {
+        function refreshComponents() {
             if (autoRefreshCheckbox.checked) {
-                location.reload();
+                // Fetch new data from server
+                fetch('/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update metrics
+                        document.getElementById('rps-value').textContent = data.rps || 0;
+                        document.getElementById('unique-ips').textContent = data.unique_ips || 0;
+                        document.getElementById('response-time').textContent = (data.avg_response_time || 0) + 'ms';
+                        document.getElementById('error-rate').textContent = (data.error_rate || 0) + '%';
+
+                        // Update status
+                        const statusDot = document.getElementById('status-dot');
+                        const statusText = document.getElementById('status-text');
+                        if (data.is_anomaly) {
+                            statusDot.className = 'status-dot danger';
+                            statusText.textContent = 'System Status: Attack Detected';
+                        } else {
+                            statusDot.className = 'status-dot success';
+                            statusText.textContent = 'System Status: Normal';
+                        }
+                    })
+                    .catch(error => console.error('Error refreshing components:', error));
             }
         }
 
@@ -237,7 +705,7 @@
             clearInterval(refreshInterval);
             if (autoRefreshCheckbox.checked) {
                 const interval = parseInt(refreshIntervalInput.value) * 1000;
-                refreshInterval = setInterval(refreshPage, interval);
+                refreshInterval = setInterval(refreshComponents, interval);
             }
         }
 
@@ -246,6 +714,129 @@
 
         // Initial setup
         updateRefreshInterval();
+
+        // Socket.IO event handlers
+        socket.on('stats_update', function(data) {
+            // Update metrics
+            document.getElementById('rps-value').textContent = data.rps;
+            document.getElementById('unique-ips').textContent = data.unique_ips;
+            document.getElementById('response-time').textContent = data.avg_response_time + 'ms';
+            document.getElementById('error-rate').textContent = data.error_rate + '%';
+
+            // Update status
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            if (data.is_anomaly) {
+                statusDot.className = 'status-dot danger';
+                statusText.textContent = 'System Status: Attack Detected';
+            } else {
+                statusDot.className = 'status-dot success';
+                statusText.textContent = 'System Status: Normal';
+            }
+
+            // Update charts with scrolling
+            const now = new Date();
+            const timeLabel = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+            
+            // Update traffic chart
+            trafficChart.data.labels.push(timeLabel);
+            trafficChart.data.datasets[0].data.push(data.rps);
+            if (trafficChart.data.labels.length > 20) {
+                trafficChart.data.labels.shift();
+                trafficChart.data.datasets[0].data.shift();
+            }
+            trafficChart.options.scales.x.min = Math.max(0, trafficChart.data.labels.length - 20);
+            trafficChart.options.scales.x.max = trafficChart.data.labels.length;
+            trafficChart.update();
+
+            // Update attack chart
+            attackChart.data.labels.push(timeLabel);
+            attackChart.data.datasets[0].data.push(data.anomaly_score);
+            if (attackChart.data.labels.length > 20) {
+                attackChart.data.labels.shift();
+                attackChart.data.datasets[0].data.shift();
+            }
+            attackChart.options.scales.x.min = Math.max(0, attackChart.data.labels.length - 20);
+            attackChart.options.scales.x.max = attackChart.data.labels.length;
+            attackChart.update();
+
+            // Add activity log
+            const activityList = document.getElementById('activity-list');
+            const activityItem = document.createElement('li');
+            activityItem.className = 'activity-item';
+            
+            const icon = document.createElement('div');
+            icon.className = 'activity-icon ' + (data.is_anomaly ? 'danger' : 'success');
+            icon.innerHTML = '<i class="fas ' + (data.is_anomaly ? 'fa-exclamation-triangle' : 'fa-check') + '"></i>';
+            
+            const content = document.createElement('div');
+            content.className = 'activity-content';
+            content.innerHTML = `
+                <div class="activity-title">${data.is_anomaly ? 'Potential DDoS Attack Detected' : 'Normal Traffic Pattern'}</div>
+                <div class="activity-time">${timeLabel}</div>
+            `;
+            
+            activityItem.appendChild(icon);
+            activityItem.appendChild(content);
+            activityList.insertBefore(activityItem, activityList.firstChild);
+            
+            if (activityList.children.length > 10) {
+                activityList.removeChild(activityList.lastChild);
+            }
+
+            // Update event log
+            const eventLog = document.getElementById('event-log');
+            const eventEntry = document.createElement('div');
+            eventEntry.className = 'log-entry';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            eventEntry.innerHTML = `
+                <div class="log-timestamp">${timestamp}</div>
+                <div class="log-content">
+                    <span class="event-type event-type-request">REQUEST</span>
+                    IP: ${data.ip || 'Unknown'} - Status: <span class="status-${data.status === 'success' ? 'success' : 'error'}">${data.status || 'Unknown'}</span> - Count: ${data.count || 1}
+                </div>
+            `;
+            
+            eventLog.insertBefore(eventEntry, eventLog.firstChild);
+            if (eventLog.children.length > 20) {
+                eventLog.removeChild(eventLog.lastChild);
+            }
+
+            // Update attack log if anomaly detected
+            if (data.is_anomaly) {
+                const attackLog = document.getElementById('attack-log');
+                const attackEntry = document.createElement('div');
+                attackEntry.className = 'log-entry';
+                
+                attackEntry.innerHTML = `
+                    <div class="log-timestamp">${timestamp}</div>
+                    <div class="log-content">
+                        <span class="event-type event-type-attack">ATTACK</span>
+                        Potential DDoS attack detected - Score: ${data.anomaly_score.toFixed(2)} - IP: ${data.ip || 'Unknown'}
+                    </div>
+                `;
+                
+                attackLog.insertBefore(attackEntry, attackLog.firstChild);
+                if (attackLog.children.length > 20) {
+                    attackLog.removeChild(attackLog.lastChild);
+                }
+            }
+        });
+
+        // Control button handlers
+        document.getElementById('start-button').addEventListener('click', function() {
+            socket.emit('start_detection');
+        });
+
+        document.getElementById('stop-button').addEventListener('click', function() {
+            socket.emit('stop_detection');
+        });
+
+        document.getElementById('settings-button').addEventListener('click', function() {
+            // Implement settings functionality
+            alert('Settings panel will be implemented in the next version');
+        });
     </script>
 </body>
 </html> 

