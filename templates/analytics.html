@@ -1,7 +1,8 @@
 <!--
     Analytics Dashboard Template
     Editor: Nandeesh Kantli
-    Last Updated: April 2024
+    Last Upda
+    ted: April 2024
     Version: 1.0.0
     Description: Real-time analytics dashboard for monitoring DDoS protection system
 -->
@@ -617,6 +618,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 0
+                },
                 plugins: {
                     legend: {
                         display: false
@@ -624,11 +628,15 @@
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Requests/Second'
+                        }
                     },
                     x: {
                         min: 0,
-                        max: 20,
+                        max: 30,
                         ticks: {
                             maxRotation: 0,
                             autoSkip: true,
@@ -655,6 +663,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: 0
+                },
                 plugins: {
                     legend: {
                         display: false
@@ -662,11 +673,16 @@
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        max: 1,
+                        title: {
+                            display: true,
+                            text: 'Anomaly Score'
+                        }
                     },
                     x: {
                         min: 0,
-                        max: 20,
+                        max: 30,
                         ticks: {
                             maxRotation: 0,
                             autoSkip: true,
@@ -676,6 +692,10 @@
                 }
             }
         });
+
+        // Track simulation state
+        let isSimulationRunning = false;
+        let simulationStartTime = null;
 
         // Auto-refresh functionality
         let refreshInterval;
@@ -724,12 +744,18 @@
         updateRefreshInterval();
 
         // Socket.IO event handlers
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
         socket.on('stats_update', function(data) {
+            console.log('Received data:', data);
+            
             // Update metrics
-            document.getElementById('rps-value').textContent = data.rps;
-            document.getElementById('unique-ips').textContent = data.unique_ips;
-            document.getElementById('response-time').textContent = data.avg_response_time + 'ms';
-            document.getElementById('error-rate').textContent = data.error_rate + '%';
+            document.getElementById('rps-value').textContent = data.rps || 0;
+            document.getElementById('unique-ips').textContent = data.unique_ips || 0;
+            document.getElementById('response-time').textContent = (data.avg_response_time || 0) + 'ms';
+            document.getElementById('error-rate').textContent = (data.error_rate || 0) + '%';
 
             // Update status
             const statusDot = document.getElementById('status-dot');
@@ -742,31 +768,27 @@
                 statusText.textContent = 'System Status: Normal';
             }
 
-            // Update charts with scrolling
+            // Update charts
             const now = new Date();
             const timeLabel = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
             
             // Update traffic chart
             trafficChart.data.labels.push(timeLabel);
-            trafficChart.data.datasets[0].data.push(data.rps);
-            if (trafficChart.data.labels.length > 20) {
+            trafficChart.data.datasets[0].data.push(data.rps || 0);
+            if (trafficChart.data.labels.length > 30) {
                 trafficChart.data.labels.shift();
                 trafficChart.data.datasets[0].data.shift();
             }
-            trafficChart.options.scales.x.min = Math.max(0, trafficChart.data.labels.length - 20);
-            trafficChart.options.scales.x.max = trafficChart.data.labels.length;
-            trafficChart.update();
+            trafficChart.update('none');
 
             // Update attack chart
             attackChart.data.labels.push(timeLabel);
-            attackChart.data.datasets[0].data.push(data.anomaly_score);
-            if (attackChart.data.labels.length > 20) {
+            attackChart.data.datasets[0].data.push(data.anomaly_score || 0);
+            if (attackChart.data.labels.length > 30) {
                 attackChart.data.labels.shift();
                 attackChart.data.datasets[0].data.shift();
             }
-            attackChart.options.scales.x.min = Math.max(0, attackChart.data.labels.length - 20);
-            attackChart.options.scales.x.max = attackChart.data.labels.length;
-            attackChart.update();
+            attackChart.update('none');
 
             // Add activity log
             const activityList = document.getElementById('activity-list');
@@ -830,6 +852,14 @@
                     attackLog.removeChild(attackLog.lastChild);
                 }
             }
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('error', function(error) {
+            console.error('Socket error:', error);
         });
 
         // Control button handlers

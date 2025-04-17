@@ -205,6 +205,9 @@ def update_analytics():
             'count': current_count
         }
         
+        # Log the data being sent
+        logging.info(f"Emitting analytics data: {data}")
+        
         analytics_queue.put(data)
     except Exception as e:
         logging.error(f"Error updating analytics: {str(e)}")
@@ -217,6 +220,7 @@ def background_task():
     while True:
         try:
             data = analytics_queue.get(timeout=1)
+            logging.info(f"Emitting data to clients: {data}")
             socketio.emit('stats_update', data)
         except queue.Empty:
             pass
@@ -341,6 +345,9 @@ def before_request():
     user_agent = request.headers.get('User-Agent', 'Unknown')
     start_time = time.time()
     
+    # Log incoming request
+    logging.info(f"Received request from IP: {ip}, Path: {request.path}")
+    
     # Check if IP is blocked
     if ip in blocked_ips:
         if time.time() - blocked_ips[ip] < BLOCK_DURATION:
@@ -354,6 +361,21 @@ def before_request():
     request_counts[ip] = request_counts.get(ip, 0) + 1
     unique_ips.add(ip)
     request_timestamps.append(time.time())  # Add timestamp for RPS calculation
+    
+    # Log request details
+    logging.info(f"Request count for {ip}: {request_counts[ip]}")
+    
+    # Check for DDoS attack
+    rps = calculate_rps()
+    anomaly_score = calculate_anomaly_score()
+    is_anomaly = anomaly_score > ANOMALY_THRESHOLD or rps > RPS_THRESHOLD
+    
+    if is_anomaly:
+        # Block all incoming requests for 3 minutes
+        blocked_ips[ip] = time.time()
+        log_block(ip, "DDoS attack detected", 180)  # 3 minutes = 180 seconds
+        error_counts.append(1)
+        return render_template('blocked.html', ip=ip), 429
     
     # Check rate limits
     if request_counts[ip] > BLOCK_THRESHOLD:

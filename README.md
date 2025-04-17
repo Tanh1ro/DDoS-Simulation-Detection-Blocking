@@ -21,6 +21,7 @@ A comprehensive solution for protecting web applications from DDoS attacks, feat
 - **DDoS Simulator**: Built-in testing tool for simulating attack scenarios
 - **Modern Web Interface**: Responsive dashboard with real-time updates
 - **WebSocket Support**: Real-time updates using Flask-SocketIO
+- **Anomaly Detection**: Visual representation of attack patterns and distributions
 
 ## 📁 Project Structure
 
@@ -29,14 +30,18 @@ DDoS/
 ├── portfolio_app.py      # Main Flask application with protection logic
 ├── ddos_simulator.py     # DDoS attack simulator for testing
 ├── requirements.txt      # Python dependencies
-├── templates/            # HTML templates
+├── portfolio_log.txt    # Detailed portfolio access logs
+├── attack_log.txt       # Detailed attack simulation logs
+├── attack_log.csv       # Structured attack data
+├── anomaly_distribution.png  # Visual representation of attack patterns
+├── templates/           # HTML templates
 │   ├── portfolio.html   # Portfolio page
 │   ├── project.html     # Project details page
 │   ├── analytics.html   # Analytics dashboard
 │   └── blocked.html     # Blocked request page
-└── analytics/           # Analytics data
-    ├── requests.csv     # Request logs
-    └── blocks.csv       # Block logs
+└── analytics/          # Analytics data
+    ├── requests.csv    # Request logs
+    └── blocks.csv      # Block logs
 ```
 
 ## 🛠️ Installation
@@ -103,6 +108,9 @@ These values can be adjusted in the configuration section of `portfolio_app.py`.
 - IP tracking
 - Blocked requests visualization
 - Performance metrics
+- Anomaly distribution visualization
+- Detailed attack logs in CSV format
+- Comprehensive portfolio access logs
 
 ## 🤝 Contributing
 

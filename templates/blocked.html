@@ -45,6 +45,24 @@
             color: #666;
             margin-bottom: 20px;
         }
+        .countdown {
+            font-size: 1.2em;
+            color: #e74c3c;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .refresh-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .refresh-button:hover {
+            background: #2980b9;
+        }
     </style>
 </head>
 <body>
@@ -57,7 +75,35 @@
         <div class="ip-address">
             Blocked IP: {{ ip }}
         </div>
-        <p>Please try again later or contact the administrator if you believe this is a mistake.</p>
+        <div class="countdown" id="countdown">
+            Block will be lifted in: <span id="timer">3:00</span>
+        </div>
+        <button class="refresh-button" onclick="window.location.reload()">
+            Check Status
+        </button>
     </div>
+
+    <script>
+        // Set the countdown timer for 3 minutes
+        let timeLeft = 180; // 3 minutes in seconds
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft > 0) {
+                timeLeft--;
+                setTimeout(updateTimer, 1000);
+            } else {
+                document.getElementById('timer').textContent = "Block lifted!";
+                document.querySelector('.refresh-button').style.display = 'block';
+            }
+        }
+        
+        // Start the countdown
+        updateTimer();
+    </script>
 </body>
 </html> 
