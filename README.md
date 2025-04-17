@@ -134,8 +134,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Contact
 
 - **Editor**: Nandeesh Kantli
-- **Email**: [Your Email]
-- **GitHub**: [Your GitHub Profile]
+- **GitHub**: https://github.com/Tanh1ro/
 
 ## 📅 Changelog
 
